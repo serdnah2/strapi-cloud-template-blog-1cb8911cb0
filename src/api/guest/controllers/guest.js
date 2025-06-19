@@ -58,9 +58,15 @@ module.exports = createCoreController('api::guest.guest', ({ strapi }) => ({
       data: {
         is_attending: Boolean(is_attending), // Aseguramos que sea booleano
         dietary_restrictions: dietary_restrictions || null,
-        special_requests: special_requests || null
+        special_requests: special_requests || null,
+        publishedAt: new Date() // Esto fuerza la publicación
       },
       populate: ['guests']
+    });
+      
+    // Publicar explícitamente la entrada
+    await strapi.entityService.update('api::guest-group.guest-group', groupId, {
+      data: { publishedAt: new Date() }
     });
 
     // Enviar correo de confirmación si hay un email en el grupo
