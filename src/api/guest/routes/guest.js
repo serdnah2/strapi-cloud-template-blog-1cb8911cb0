@@ -6,27 +6,8 @@
 
 const { createCoreRouter } = require('@strapi/strapi').factories;
 
-module.exports = createCoreRouter('api::guest.guest', {
-  config: {
-    find: {
-      auth: false
-    },
-    findOne: {
-      auth: false
-    },
-    create: {
-      auth: false
-    },
-    update: {
-      auth: false
-    },
-    delete: {
-      auth: false
-    },
-  },
-  only: ['find', 'findOne', 'create', 'update'],
-  except: [],
-  extends: [
+module.exports = {
+  routes: [
     {
       method: 'GET',
       path: '/invitation/:code',
@@ -48,4 +29,4 @@ module.exports = createCoreRouter('api::guest.guest', {
       }
     }
   ]
-});
+};
