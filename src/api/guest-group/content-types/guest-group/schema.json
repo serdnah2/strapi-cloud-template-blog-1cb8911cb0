@@ -8,7 +8,7 @@
     "description": "Grupos de invitados para la boda"
   },
   "options": {
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
   "pluginOptions": {},
   "attributes": {

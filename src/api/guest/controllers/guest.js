@@ -53,27 +53,20 @@ module.exports = createCoreController('api::guest.guest', ({ strapi }) => ({
       return ctx.notFound('Grupo no encontrado');
     }
 
-    // Actualizar la información del grupo
+    // Actualizar los datos del grupo
     const updatedGroup = await strapi.entityService.update('api::guest-group.guest-group', groupId, {
       data: {
-        is_attending: Boolean(is_attending), // Aseguramos que sea booleano
+        is_attending: Boolean(is_attending),
         dietary_restrictions: dietary_restrictions || null,
-        special_requests: special_requests || null,
-        publishedAt: new Date() // Esto fuerza la publicación
+        special_requests: special_requests || null
       },
       populate: ['guests']
-    });
-      
-    // Publicar explícitamente la entrada
-    await strapi.entityService.update('api::guest-group.guest-group', groupId, {
-      data: { publishedAt: new Date() }
     });
 
     // Enviar correo de confirmación si hay un email en el grupo
     // Esto es opcional, puedes implementarlo más adelante
     // await this.sendConfirmationEmail(updatedGroup);
 
-    
     // Retornar la información actualizada
     return {
       id: updatedGroup.id,
