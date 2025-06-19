@@ -23,22 +23,20 @@ module.exports = createCoreController('api::guest.guest', ({ strapi }) => ({
         return ctx.notFound('Grupo no encontrado');
       }
 
-      // Filtrar duplicados por email (asumiendo que el email es único por invitado)
-      const uniqueEmails = new Set();
+      // Obtener solo los invitados únicos por ID
       const uniqueGuests = [];
+      const guestIds = new Set();
       
-      // Primero, asegurarnos de que group.guests sea un array
+      // Asegurarnos de que group.guests sea un array
       const guests = Array.isArray(group.guests) ? group.guests : [];
       
-      // Filtrar por email único
+      // Filtrar por ID único
       for (const guest of guests) {
-        if (guest && guest.email && !uniqueEmails.has(guest.email)) {
-          uniqueEmails.add(guest.email);
+        if (guest && guest.id && !guestIds.has(guest.id)) {
+          guestIds.add(guest.id);
           uniqueGuests.push({
             id: guest.id,
-            name: guest.name || '',
-            email: guest.email,
-            phone: guest.phone || null
+            name: guest.name || ''
           });
         }
       }

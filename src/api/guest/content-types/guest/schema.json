@@ -16,12 +16,6 @@
       "type": "string",
       "required": true
     },
-    "email": {
-      "type": "email"
-    },
-    "phone": {
-      "type": "string"
-    },
     "guest_group": {
       "type": "relation",
       "relation": "manyToOne",
