@@ -1,0 +1,35 @@
+{
+  "kind": "collectionType",
+  "collectionName": "guest_groups",
+  "info": {
+    "singularName": "guest-group",
+    "pluralName": "guest-groups",
+    "displayName": "Grupo de Invitados",
+    "description": "Grupos de invitados para la boda"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "code": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "notes": {
+      "type": "text"
+    },
+    "guests": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::guest.guest",
+      "mappedBy": "guest_group"
+    }
+  }
+}

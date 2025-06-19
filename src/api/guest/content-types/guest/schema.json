@@ -1,0 +1,50 @@
+{
+  "kind": "collectionType",
+  "collectionName": "guests",
+  "info": {
+    "singularName": "guest",
+    "pluralName": "guests",
+    "displayName": "Invitado",
+    "description": "Invitados a la boda"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "email": {
+      "type": "email"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "is_attending": {
+      "type": "boolean",
+      "default": false
+    },
+    "attending_ceremony": {
+      "type": "boolean",
+      "default": false
+    },
+    "attending_reception": {
+      "type": "boolean",
+      "default": false
+    },
+    "dietary_restrictions": {
+      "type": "text"
+    },
+    "special_requests": {
+      "type": "text"
+    },
+    "guest_group": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::guest-group.guest-group",
+      "inversedBy": "guests"
+    }
+  }
+}
