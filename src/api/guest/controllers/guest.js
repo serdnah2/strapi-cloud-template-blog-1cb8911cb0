@@ -11,10 +11,14 @@ module.exports = createCoreController('api::guest.guest', ({ strapi }) => ({
     const { code } = ctx.params;
     
     try {
-      // Consulta directa a la base de datos
-      const groups = await strapi.db.query('api::guest-group.guest-group').findMany({
-        where: { code },
-        populate: ['guests']
+      // Usar la API de Strapi directamente
+      const groups = await strapi.entityService.findMany('api::guest-group.guest-group', {
+        filters: { code },
+        populate: {
+          guests: {
+            fields: ['id', 'name']
+          }
+        }
       });
       
       const group = groups[0]; // Tomar el primer grupo que coincida
@@ -22,24 +26,23 @@ module.exports = createCoreController('api::guest.guest', ({ strapi }) => ({
       if (!group) {
         return ctx.notFound('Grupo no encontrado');
       }
-
-      // Obtener solo los invitados únicos por ID
-      const uniqueGuests = [];
-      const guestIds = new Set();
       
-      // Asegurarnos de que group.guests sea un array
-      const guests = Array.isArray(group.guests) ? group.guests : [];
+      // Usar un Map para eliminar duplicados por ID
+      const guestsMap = new Map();
       
-      // Filtrar por ID único
-      for (const guest of guests) {
-        if (guest && guest.id && !guestIds.has(guest.id)) {
-          guestIds.add(guest.id);
-          uniqueGuests.push({
-            id: guest.id,
-            name: guest.name || ''
-          });
-        }
+      if (Array.isArray(group.guests)) {
+        group.guests.forEach(guest => {
+          if (guest && guest.id) {
+            guestsMap.set(guest.id, {
+              id: guest.id,
+              name: guest.name || ''
+            });
+          }
+        });
       }
+      
+      // Convertir el Map de vuelta a array
+      const uniqueGuests = Array.from(guestsMap.values());
 
       return {
         id: group.id,
@@ -59,42 +62,56 @@ module.exports = createCoreController('api::guest.guest', ({ strapi }) => ({
     const { groupId } = ctx.params;
     const { is_attending, dietary_restrictions, special_requests } = ctx.request.body;
 
-    // Validar que el grupo existe
-    const group = await strapi.entityService.findOne('api::guest-group.guest-group', groupId, {
-      populate: ['guests']
-    });
-    
-    if (!group) {
-      return ctx.notFound('Grupo no encontrado');
+    try {
+      // Validar que el grupo existe
+      const group = await strapi.entityService.findOne('api::guest-group.guest-group', groupId, {
+        populate: ['guests']
+      });
+      
+      if (!group) {
+        return ctx.notFound('Grupo no encontrado');
+      }
+
+      // Actualizar los datos del grupo
+      const updatedGroup = await strapi.entityService.update('api::guest-group.guest-group', groupId, {
+        data: {
+          is_attending: Boolean(is_attending),
+          dietary_restrictions: dietary_restrictions || null,
+          special_requests: special_requests || null
+        },
+        populate: ['guests']
+      });
+
+      // Obtener solo los invitados únicos por ID
+      const uniqueGuests = [];
+      const guestIds = new Set();
+      
+      // Asegurarnos de que updatedGroup.guests sea un array
+      const guests = Array.isArray(updatedGroup.guests) ? updatedGroup.guests : [];
+      
+      // Filtrar por ID único
+      for (const guest of guests) {
+        if (guest && guest.id && !guestIds.has(guest.id)) {
+          guestIds.add(guest.id);
+          uniqueGuests.push({
+            id: guest.id,
+            name: guest.name || ''
+          });
+        }
+      }
+
+      // Retornar la información actualizada
+      return {
+        id: updatedGroup.id,
+        name: updatedGroup.name || '',
+        is_attending: Boolean(updatedGroup.is_attending),
+        dietary_restrictions: updatedGroup.dietary_restrictions || null,
+        special_requests: updatedGroup.special_requests || null,
+        guests: uniqueGuests
+      };
+    } catch (error) {
+      console.error('Error en confirmAttendance:', error);
+      return ctx.internalServerError('Error al actualizar la confirmación');
     }
-
-    // Actualizar los datos del grupo
-    const updatedGroup = await strapi.entityService.update('api::guest-group.guest-group', groupId, {
-      data: {
-        is_attending: Boolean(is_attending),
-        dietary_restrictions: dietary_restrictions || null,
-        special_requests: special_requests || null
-      },
-      populate: ['guests']
-    });
-
-    // Enviar correo de confirmación si hay un email en el grupo
-    // Esto es opcional, puedes implementarlo más adelante
-    // await this.sendConfirmationEmail(updatedGroup);
-
-    // Retornar la información actualizada
-    return {
-      id: updatedGroup.id,
-      name: updatedGroup.name,
-      is_attending: updatedGroup.is_attending,
-      dietary_restrictions: updatedGroup.dietary_restrictions,
-      special_restrictions: updatedGroup.special_requests,
-      guests: updatedGroup.guests.map(guest => ({
-        id: guest.id,
-        name: guest.name,
-        email: guest.email,
-        phone: guest.phone
-      }))
-    };
   }
 }));
