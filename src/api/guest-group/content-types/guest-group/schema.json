@@ -27,6 +27,11 @@
       "default": false,
       "description": "Indica si el grupo confirmó asistencia"
     },
+    "has_responded": {
+      "type": "boolean",
+      "default": false,
+      "description": "Indica si el grupo ya ha respondido a la invitación"
+    },
     "dietary_restrictions": {
       "type": "text"
     },

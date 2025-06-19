@@ -393,6 +393,7 @@ export interface ApiGuestGroupGuestGroup extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     dietary_restrictions: Schema.Attribute.Text;
     guests: Schema.Attribute.Relation<'oneToMany', 'api::guest.guest'>;
+    has_responded: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     is_attending: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<

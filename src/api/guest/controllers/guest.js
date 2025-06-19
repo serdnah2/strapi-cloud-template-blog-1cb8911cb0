@@ -50,7 +50,8 @@ module.exports = createCoreController('api::guest.guest', ({ strapi }) => ({
         is_attending: Boolean(group.is_attending),
         dietary_restrictions: group.dietary_restrictions || null,
         special_requests: group.special_requests || null,
-        guests: uniqueGuests
+        guests: uniqueGuests,
+        has_responded: Boolean(group.has_responded)
       };
     } catch (error) {
       console.error('Error en findByGroupCode:', error);
@@ -63,41 +64,39 @@ module.exports = createCoreController('api::guest.guest', ({ strapi }) => ({
     const { is_attending, dietary_restrictions, special_requests } = ctx.request.body;
 
     try {
-      // Validar que el grupo existe
-      const group = await strapi.entityService.findOne('api::guest-group.guest-group', groupId, {
-        populate: ['guests']
-      });
-      
-      if (!group) {
-        return ctx.notFound('Grupo no encontrado');
-      }
-
-      // Actualizar los datos del grupo
+      // Primero actualizar el grupo
       const updatedGroup = await strapi.entityService.update('api::guest-group.guest-group', groupId, {
         data: {
           is_attending: Boolean(is_attending),
           dietary_restrictions: dietary_restrictions || null,
-          special_requests: special_requests || null
-        },
+          special_requests: special_requests || null,
+          has_responded: true
+        }
+      });
+
+      // Luego obtener el grupo con los invitados
+      const groupWithGuests = await strapi.entityService.findOne('api::guest-group.guest-group', groupId, {
         populate: ['guests']
       });
 
-      // Obtener solo los invitados únicos por ID
+      if (!groupWithGuests) {
+        return ctx.notFound('Grupo no encontrado después de actualizar');
+      }
+
+      // Procesar los invitados
       const uniqueGuests = [];
       const guestIds = new Set();
       
-      // Asegurarnos de que updatedGroup.guests sea un array
-      const guests = Array.isArray(updatedGroup.guests) ? updatedGroup.guests : [];
-      
-      // Filtrar por ID único
-      for (const guest of guests) {
-        if (guest && guest.id && !guestIds.has(guest.id)) {
-          guestIds.add(guest.id);
-          uniqueGuests.push({
-            id: guest.id,
-            name: guest.name || ''
-          });
-        }
+      if (Array.isArray(groupWithGuests.guests)) {
+        groupWithGuests.guests.forEach(guest => {
+          if (guest && guest.id && !guestIds.has(guest.id)) {
+            guestIds.add(guest.id);
+            uniqueGuests.push({
+              id: guest.id,
+              name: guest.name || ''
+            });
+          }
+        });
       }
 
       // Retornar la información actualizada
@@ -106,6 +105,7 @@ module.exports = createCoreController('api::guest.guest', ({ strapi }) => ({
         name: updatedGroup.name || '',
         is_attending: Boolean(updatedGroup.is_attending),
         dietary_restrictions: updatedGroup.dietary_restrictions || null,
+        has_responded: Boolean(updatedGroup.has_responded),
         special_requests: updatedGroup.special_requests || null,
         guests: uniqueGuests
       };
