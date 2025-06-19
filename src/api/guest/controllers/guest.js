@@ -11,29 +11,47 @@ module.exports = createCoreController('api::guest.guest', ({ strapi }) => ({
     const { code } = ctx.params;
     
     try {
-      // Buscar el grupo por código con sus invitados
+      // Buscar el grupo por código con sus invitados, asegurando que no haya duplicados
       const group = await strapi.db.query('api::guest-group.guest-group').findOne({
         where: { code },
-        populate: ['guests']
+        populate: {
+          guests: {
+            select: ['id', 'name', 'email', 'phone'],
+            where: { guest_group: { code } },
+            orderBy: { id: 'asc' },
+            distinct: ['id']
+          }
+        }
       });
 
       if (!group) {
         return ctx.notFound('Grupo no encontrado');
       }
 
-      // Retornar solo la información necesaria
+      // Usar un Set para asegurar que no haya invitados duplicados
+      const uniqueGuests = [];
+      const guestIds = new Set();
+      
+      group.guests.forEach(guest => {
+        if (!guestIds.has(guest.id)) {
+          guestIds.add(guest.id);
+          uniqueGuests.push({
+            id: guest.id,
+            name: guest.name,
+            email: guest.email,
+            phone: guest.phone
+          });
+        }
+      });
+
+      // Retornar la información del grupo con invitados únicos
       return {
         id: group.id,
         name: group.name,
         is_attending: group.is_attending,
         dietary_restrictions: group.dietary_restrictions,
         special_requests: group.special_requests,
-        guests: group.guests.map(guest => ({
-          id: guest.id,
-          name: guest.name,
-          email: guest.email,
-          phone: guest.phone
-        }))
+        guests: uniqueGuests
       };
     } catch (error) {
       return ctx.internalServerError('Error al procesar la solicitud');
