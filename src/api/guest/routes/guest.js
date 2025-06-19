@@ -29,18 +29,22 @@ module.exports = createCoreRouter('api::guest.guest', {
   extends: [
     {
       method: 'GET',
-      path: '/guests/group/:code',
+      path: '/invitation/:code',
       handler: 'guest.findByGroupCode',
       config: {
-        auth: false
+        auth: false,
+        description: 'Obtener los detalles de una invitación por su código',
+        tags: ['invitation']
       }
     },
     {
       method: 'POST',
-      path: '/guests/:guestId/confirm',
+      path: '/invitation/:groupId/confirm',
       handler: 'guest.confirmAttendance',
       config: {
-        auth: false
+        auth: false,
+        description: 'Confirmar asistencia para un grupo de invitados',
+        tags: ['invitation']
       }
     }
   ]

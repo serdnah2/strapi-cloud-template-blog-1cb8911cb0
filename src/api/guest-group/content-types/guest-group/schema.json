@@ -22,6 +22,17 @@
       "required": true,
       "unique": true
     },
+    "is_attending": {
+      "type": "boolean",
+      "default": false,
+      "description": "Indica si el grupo confirmó asistencia"
+    },
+    "dietary_restrictions": {
+      "type": "text"
+    },
+    "special_requests": {
+      "type": "text"
+    },
     "notes": {
       "type": "text"
     },

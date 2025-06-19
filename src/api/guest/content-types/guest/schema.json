@@ -22,24 +22,6 @@
     "phone": {
       "type": "string"
     },
-    "is_attending": {
-      "type": "boolean",
-      "default": false
-    },
-    "attending_ceremony": {
-      "type": "boolean",
-      "default": false
-    },
-    "attending_reception": {
-      "type": "boolean",
-      "default": false
-    },
-    "dietary_restrictions": {
-      "type": "text"
-    },
-    "special_requests": {
-      "type": "text"
-    },
     "guest_group": {
       "type": "relation",
       "relation": "manyToOne",

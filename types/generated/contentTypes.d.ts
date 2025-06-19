@@ -391,7 +391,9 @@ export interface ApiGuestGroupGuestGroup extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    dietary_restrictions: Schema.Attribute.Text;
     guests: Schema.Attribute.Relation<'oneToMany', 'api::guest.guest'>;
+    is_attending: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -403,6 +405,7 @@ export interface ApiGuestGroupGuestGroup extends Struct.CollectionTypeSchema {
       Schema.Attribute.Unique;
     notes: Schema.Attribute.Text;
     publishedAt: Schema.Attribute.DateTime;
+    special_requests: Schema.Attribute.Text;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -421,27 +424,20 @@ export interface ApiGuestGuest extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
-    attending_ceremony: Schema.Attribute.Boolean &
-      Schema.Attribute.DefaultTo<false>;
-    attending_reception: Schema.Attribute.Boolean &
-      Schema.Attribute.DefaultTo<false>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    dietary_restrictions: Schema.Attribute.Text;
     email: Schema.Attribute.Email;
     guest_group: Schema.Attribute.Relation<
       'manyToOne',
       'api::guest-group.guest-group'
     >;
-    is_attending: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::guest.guest'> &
       Schema.Attribute.Private;
     name: Schema.Attribute.String & Schema.Attribute.Required;
     phone: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
-    special_requests: Schema.Attribute.Text;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
