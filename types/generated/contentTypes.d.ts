@@ -382,7 +382,7 @@ export interface ApiGuestGroupGuestGroup extends Struct.CollectionTypeSchema {
     singularName: 'guest-group';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     code: Schema.Attribute.String &

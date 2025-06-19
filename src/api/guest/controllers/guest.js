@@ -11,49 +11,48 @@ module.exports = createCoreController('api::guest.guest', ({ strapi }) => ({
     const { code } = ctx.params;
     
     try {
-      // Buscar el grupo por código con sus invitados, asegurando que no haya duplicados
-      const group = await strapi.db.query('api::guest-group.guest-group').findOne({
+      // Consulta directa a la base de datos
+      const groups = await strapi.db.query('api::guest-group.guest-group').findMany({
         where: { code },
-        populate: {
-          guests: {
-            select: ['id', 'name', 'email', 'phone'],
-            where: { guest_group: { code } },
-            orderBy: { id: 'asc' },
-            distinct: ['id']
-          }
-        }
+        populate: ['guests']
       });
+      
+      const group = groups[0]; // Tomar el primer grupo que coincida
 
       if (!group) {
         return ctx.notFound('Grupo no encontrado');
       }
 
-      // Usar un Set para asegurar que no haya invitados duplicados
+      // Filtrar duplicados por email (asumiendo que el email es único por invitado)
+      const uniqueEmails = new Set();
       const uniqueGuests = [];
-      const guestIds = new Set();
       
-      group.guests.forEach(guest => {
-        if (!guestIds.has(guest.id)) {
-          guestIds.add(guest.id);
+      // Primero, asegurarnos de que group.guests sea un array
+      const guests = Array.isArray(group.guests) ? group.guests : [];
+      
+      // Filtrar por email único
+      for (const guest of guests) {
+        if (guest && guest.email && !uniqueEmails.has(guest.email)) {
+          uniqueEmails.add(guest.email);
           uniqueGuests.push({
             id: guest.id,
-            name: guest.name,
+            name: guest.name || '',
             email: guest.email,
-            phone: guest.phone
+            phone: guest.phone || null
           });
         }
-      });
+      }
 
-      // Retornar la información del grupo con invitados únicos
       return {
         id: group.id,
-        name: group.name,
-        is_attending: group.is_attending,
-        dietary_restrictions: group.dietary_restrictions,
-        special_requests: group.special_requests,
+        name: group.name || '',
+        is_attending: Boolean(group.is_attending),
+        dietary_restrictions: group.dietary_restrictions || null,
+        special_requests: group.special_requests || null,
         guests: uniqueGuests
       };
     } catch (error) {
+      console.error('Error en findByGroupCode:', error);
       return ctx.internalServerError('Error al procesar la solicitud');
     }
   },
